@@ -74,15 +74,17 @@ v3.8 introduces a *Macro-Factor Extended Model* that links macro-scan results th
 
 ---
 
-## v4.0 / v4.1 新增机制 / What v4.0 & v4.1 Add
+## v4.0 ~ v4.2 新增机制 / What v4.0 – v4.2 Add
 
-v4.0 与 v4.1 围绕 2026-08 苹果「涨价发布」窗口（Mac mini M6 / M5 Pro 官宣）补齐两类不稳定场景的处理规则：
+v4.0 ~ v4.2 围绕 2026-08 苹果「涨价发布」窗口（Mac mini M6 / M5 Pro 官宣）补齐两类不稳定场景的处理规则与数据防护：
 
-v4.0 & v4.1 add handling rules for two kinds of instability around Apple's August 2026 **price-hike launch window** (Mac mini M6 / M5 Pro announcement):
+v4.0 – v4.2 add handling rules for two kinds of instability around Apple's August 2026 **price-hike launch window** (Mac mini M6 / M5 Pro announcement), plus a data-sampling safeguard:
 
 - **涨价发布场景 §9.4（锚定-冲击双因子模型）/ Price-hike release (§9.4, anchoring–impact dual-factor model)**：新品官宣价高于老款现行官方价时，二手价预估不再只算代际冲击，而是「锚上移 × 冲击」两股力量乘法叠加——`预估二手价 = 当前二手价 × (1 + 锚涨幅) × (1 − 冲击幅度 × 时变因子)`。含发布形态判定（涨价/平价/降价）、分档差异化、三情景区间预估与「等降价捡漏」失效判定
 - **官宣未发售窗口的性能数据处理 §9.5 / Pre-launch performance handling (§9.5)**：新品芯片跑分为推算值时，品类基准芯片保留最后一个**实测**旗舰（推算值不做分母）、新芯片系数允许 >100%、按推算区间做敏感性分析、发售日实测回填后统一切换基准
 - **实证参考 / Empirical anchors**：constants.json 内置 iPhone 17（2025-09 涨价发布）与苹果全线涨价（2026-06）两个事件的实测二手反应，作为三情景预估的实证口径
+- **同代配置价格倒挂校验（v4.2）/ Same-generation price-inversion check (v4.2)**：二手采样价须与同代更高配置款交叉校验——标准款价格高于同代 Pro/高配款即判样本污染（高配挂单或引流样本混入），剔除后重新采样；闲鱼等列表页批量采样必做。实证：iPhone 16 256G 旧采样 5875 元与 16 Pro（5400 元）倒挂，判定污染后修正为 4000 元
+- **引擎同步 §9.4 锚定项（v4.2）/ Engine sync of the §9.4 anchor term (v4.2)**：主仓库 TS 引擎 `predictDiscountedOldPrice` 已实现双因子公式，`hasHikeOccurred` 识别「已官宣」（类型 B 直接用快照官方价，消除重复计算），并修复传导因子负百分比解析的符号反转
 
 ---
 
@@ -169,7 +171,7 @@ apple-value-analysis/
 ├── LICENSE                        # MIT
 ├── README.md                      # 本文件 / this file
 ├── METHOD.md                      # 方法论文章（中文 + English 双语）/ Methodology essay (bilingual)
-├── SKILL.md                       # 标准操作流程 SOP v4.1（Agent Skill 标准）/ SOP v4.1
+├── SKILL.md                       # 标准操作流程 SOP v4.2（Agent Skill 标准）/ SOP v4.2
 └── docs/
     └── images/                    # METHOD.md 插图 / illustrations for METHOD.md
 ```
@@ -204,15 +206,16 @@ constants.json 数据来源（详见主仓库 README）/ Data sources for consta
 
 ## 版本 / Version
 
-当前 SOP 为 **v4.1**（2026-08-26）。SOP（方法论）与 constants.json（数据）版本号**独立演进**：SOP 仅在流程/公式/规则变更时升级，constants.json 随数据更新（约每周一次）递增，版本号可能高于 SOP 版本。只要 SOP 定义的字段结构在 constants.json 中存在，两者即可正常协同。
+当前 SOP 为 **v4.2**（2026-08-26）。SOP（方法论）与 constants.json（数据）版本号**独立演进**：SOP 仅在流程/公式/规则变更时升级，constants.json 随数据更新（约每周一次）递增，版本号可能高于 SOP 版本。只要 SOP 定义的字段结构在 constants.json 中存在，两者即可正常协同。
 
 近期版本 / Recent versions：
 
+- **v4.2**（2026-08-26）：快照采集新增同代配置价格倒挂校验（闲鱼列表页采样污染防护，实证 iPhone 16 256G 修正 5875→4000 元）；引擎同步 §9.4 锚定项——`predictDiscountedOldPrice` 双因子公式、`hasHikeOccurred` 识别「已官宣」、修复传导因子负百分比符号反转；§10 新增品类键名统一长期维护项（拆分门槛分键冲击差异 >10pp）
 - **v4.1**（2026-08-26）：新增 §9.4 涨价发布场景（锚定-冲击双因子模型，含「等降价捡漏」失效判定与三情景预估）与 §9.5 官宣未发售窗口的性能数据处理（基准保留实测口径、推算区间敏感性、变体折算）
 - **v4.0**（2026-08-25）：Mac mini M6 / M5 Pro 官宣数据入库，残值分母切换 M6 口径，新增桌面端跳代规律
 - **v3.8**（2026-08-02）：宏观因素扩展模型（分层扫描、新品价格预测、冲击时变曲线、缺货等待期）
 
-Current SOP is **v4.1** (2026-08-26). SOP (methodology) and constants.json (data) **evolve independently**: SOP bumps only on changes to process/formula/rules; constants.json bumps on data updates (about weekly) and may run ahead of the SOP version. As long as the field structure defined by the SOP exists in constants.json, the two work together.
+Current SOP is **v4.2** (2026-08-26). SOP (methodology) and constants.json (data) **evolve independently**: SOP bumps only on changes to process/formula/rules; constants.json bumps on data updates (about weekly) and may run ahead of the SOP version. As long as the field structure defined by the SOP exists in constants.json, the two work together.
 
 ---
 
